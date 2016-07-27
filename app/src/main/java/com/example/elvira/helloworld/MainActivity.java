@@ -5,13 +5,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private Button mTrueButton;
     private Button mFalseButton;
-    private Button mNextButton;
+    private ImageButton mNextButton;
     private TextView mQuestionTextView;
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
@@ -22,6 +23,8 @@ public class MainActivity extends Activity {
     };
     private int mCurrentIndex = 0;
     private static final String TAG = "MainActivity";
+    private static final String KEY_INDEX = "index";
+
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
@@ -29,12 +32,16 @@ public class MainActivity extends Activity {
 
     private void checkAnswer(boolean userPressedTrue) {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+
         int messageResId = 0;
+
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.true_toast;
         } else {
             messageResId = R.string.false_toast;
         }
+
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -49,9 +56,7 @@ public class MainActivity extends Activity {
         mTrueButton.setOnClickListener(
                 new View.OnClickListener() {
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this,
-                                R.string.false_toast,
-                                Toast.LENGTH_SHORT).show();
+                        checkAnswer(true);
                     }
                 }
         );
@@ -61,14 +66,12 @@ public class MainActivity extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this,
-                                R.string.true_toast,
-                                Toast.LENGTH_SHORT).show();
+                        checkAnswer(false);
                     }
                 }
         );
 
-        mNextButton = (Button) findViewById(R.id.next_button);
+        mNextButton = (ImageButton) findViewById(R.id.next_button);
         mNextButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -79,7 +82,17 @@ public class MainActivity extends Activity {
                 }
         );
 
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        }
         updateQuestion();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        Log.i(TAG, "onSaveInstanceState");
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
     }
 
     public void onStart() {
